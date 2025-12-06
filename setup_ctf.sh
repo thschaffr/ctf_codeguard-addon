@@ -111,7 +111,9 @@ fi
 EOL
 chmod +x ~/.claude/bin/codeguard-verify
 
-# C. Configure Global Settings
+# C. Configure Global Settings (MERGE, don't overwrite)
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
 HOOK_CONFIG='{
   "hooks": {
     "UserPromptSubmit": [
@@ -127,8 +129,25 @@ HOOK_CONFIG='{
     ]
   }
 }'
-echo "$HOOK_CONFIG" > ~/.claude/settings.json
-echo -e "${GREEN}✔ Shadow Infrastructure Configured (~/.claude/)${NC}"
+
+# Merge with existing settings (if file exists and is valid JSON)
+if [ -f "$SETTINGS_FILE" ] && python3 -c "import json; json.load(open('$SETTINGS_FILE'))" 2>/dev/null; then
+    # Merge existing settings with new hooks
+    python3 -c "
+import json
+with open('$SETTINGS_FILE', 'r') as f:
+    existing = json.load(f)
+hooks = json.loads('''$HOOK_CONFIG''')
+existing.update(hooks)
+with open('$SETTINGS_FILE', 'w') as f:
+    json.dump(existing, f, indent=2)
+"
+    echo -e "${GREEN}✔ Merged hooks into existing settings (~/.claude/settings.json)${NC}"
+else
+    # No existing file or invalid JSON - create fresh
+    echo "$HOOK_CONFIG" > "$SETTINGS_FILE"
+    echo -e "${GREEN}✔ Created new settings file (~/.claude/settings.json)${NC}"
+fi
 
 # --- 3. GENERATE & ENCODE POLICY (FIXED LOGIC) ---
 
