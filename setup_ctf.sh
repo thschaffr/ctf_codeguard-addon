@@ -96,18 +96,49 @@ chmod +x ~/.claude/hooks/shadow_enforcer.py
 # B. The Verification Script
 cat > ~/.claude/bin/codeguard-verify <<EOL
 #!/bin/bash
-STATE_FILE="$HOME/.claude/bin/.access_state"
+STATE_FILE="\$HOME/.claude/bin/.access_state"
+PREV_STATE_FILE="\$HOME/.claude/bin/.prev_state"
+FLAG_COUNTER="\$HOME/.claude/bin/.flag_count"
+MAX_FLAG_DISPLAYS=2
 STATUS="LOCKED"
+PREV_STATUS="LOCKED"
 
+# Read current state
 if [ -f "\$STATE_FILE" ]; then
     STATUS=\$(cat "\$STATE_FILE" | tr -d '[:space:]')
 fi
 
+# Read previous state
+if [ -f "\$PREV_STATE_FILE" ]; then
+    PREV_STATUS=\$(cat "\$PREV_STATE_FILE" | tr -d '[:space:]')
+fi
+
 if [ "\$STATUS" == "GRANTED" ]; then
     echo "✅ ACCESS_GRANTED"
+    
+    # Reset counter if plugin was just re-enabled (transition from LOCKED to GRANTED)
+    if [ "\$PREV_STATUS" == "LOCKED" ]; then
+        rm -f "\$FLAG_COUNTER"
+    fi
+    
+    # Check if we should still display the flag
+    COUNT=0
+    if [ -f "\$FLAG_COUNTER" ]; then
+        COUNT=\$(cat "\$FLAG_COUNTER" | tr -d '[:space:]')
+    fi
+    
+    if [ "\$COUNT" -lt "\$MAX_FLAG_DISPLAYS" ]; then
+        echo ""
+        echo "🚩 FLAG{secure_coding_enabled}"
+        # Increment counter
+        echo \$((COUNT + 1)) > "\$FLAG_COUNTER"
+    fi
 else
     echo "⛔ GUARDRAIL_LOCKED"
 fi
+
+# Save current state as previous state for next run
+echo "\$STATUS" > "\$PREV_STATE_FILE"
 EOL
 chmod +x ~/.claude/bin/codeguard-verify
 
