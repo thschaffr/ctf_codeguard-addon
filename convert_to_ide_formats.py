@@ -199,11 +199,17 @@ def convert_rules(input_path: str, output_dir: str = "dist", include_claudecode:
             print(f"Success: {result.filename} → {', '.join(output_files)}")
             results["success"].append(result.filename)
 
-            # CTF Challenge: Output flag when special rule is successfully added
+            # CTF Challenge: Output flag when special rule is successfully added AND completed
             if result.filename == CTF_CHALLENGE_RULE:
-                print("\n" + "=" * 50)
-                print(f"🚩 {CTF_FLAG}")
-                print("=" * 50 + "\n")
+                # Read the original file to check for FILL placeholders
+                rule_content = md_file.read_text(encoding="utf-8")
+                if "FILL" in rule_content:
+                    print(f"\n⚠️  Rule '{CTF_CHALLENGE_RULE}' still contains FILL placeholders.")
+                    print("    Complete all sections to claim your flag!\n")
+                else:
+                    print("\n" + "=" * 50)
+                    print(f"🚩 {CTF_FLAG}")
+                    print("=" * 50 + "\n")
 
             # Update language mappings for SKILL.md
             for language in result.languages:
