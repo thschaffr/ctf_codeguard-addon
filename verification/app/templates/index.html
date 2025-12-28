@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF Challenge Verification Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-gradient"></div>
+    <main class="container">
+        <header class="hero">
+            <div>
+                <h1>Challenge Verification Console</h1>
+                <p>Run automated tests to confirm your patches, claim flags, and reset the vulnerable stack at any time.</p>
+            </div>
+            <div class="action-stack">
+                <button id="resetBtn" class="reset-btn">Reset Environment</button>
+                <button id="rebuildBtn" class="secondary-btn">Fix Applied</button>
+            </div>
+        </header>
+
+        <section class="grid">
+            <article class="card" data-challenge="sql">
+                <div class="card-header">
+                    <div class="icon-pill">01</div>
+                    <h2>SQL Injection</h2>
+                </div>
+                <p class="card-body">
+                    Attempts to bypass authentication with a crafted payload. Harden your queries to keep the attackers out.
+                </p>
+                <div class="card-footer">
+                    <button class="verify-btn" data-challenge="sql">Verify Fix</button>
+                    <span class="status-pill" data-status="sql">Awaiting verification</span>
+                </div>
+                <pre class="flag" data-flag="sql"></pre>
+            </article>
+
+            <article class="card" data-challenge="idor">
+                <div class="card-header">
+                    <div class="icon-pill">02</div>
+                    <h2>IDOR Exposure</h2>
+                </div>
+                <p class="card-body">
+                    Ensures profile data can&rsquo;t be enumerated by manipulating object IDs. Enforce access control everywhere.
+                </p>
+                <div class="card-footer">
+                    <button class="verify-btn" data-challenge="idor">Verify Fix</button>
+                    <span class="status-pill" data-status="idor">Awaiting verification</span>
+                </div>
+                <pre class="flag" data-flag="idor"></pre>
+            </article>
+
+            <article class="card" data-challenge="rce">
+                <div class="card-header">
+                    <div class="icon-pill">03</div>
+                    <h2>Upload Execution</h2>
+                </div>
+                <p class="card-body">
+                    Validates the upload endpoint can no longer execute arbitrary payloads. Lock down file handling to win.
+                </p>
+                <div class="card-footer">
+                    <button class="verify-btn" data-challenge="rce">Verify Fix</button>
+                    <span class="status-pill" data-status="rce">Awaiting verification</span>
+                </div>
+                <pre class="flag" data-flag="rce"></pre>
+            </article>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <div class="footer-anim">
+        <div class="pacman"></div>
+        <div class="ghost ghost-1"></div>
+        <div class="ghost ghost-2"></div>
+    </div>
+
+    <script>
+        const toast = document.getElementById('toast');
+
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            toast.className = 'toast show ' + (isError ? 'error' : 'success');
+            setTimeout(() => toast.className = 'toast', 3200);
+        }
+
+        async function postJSON(url) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || response.statusText);
+            }
+            return response.json();
+        }
+
+        async function runVerification(challenge) {
+            const status = document.querySelector(`[data-status='${challenge}']`);
+            const flagEl = document.querySelector(`[data-flag='${challenge}']`);
+            flagEl.textContent = '';
+            status.textContent = 'Running...';
+            status.classList.remove('ok', 'fail');
+            status.classList.add('running');
+
+            try {
+                const result = await postJSON(`/api/verify/${challenge}`);
+                if (result.success) {
+                    status.textContent = 'Verified';
+                    status.classList.remove('running');
+                    status.classList.add('ok');
+                    if (result.flag) {
+                        flagEl.textContent = result.flag;
+                        flagEl.classList.add('visible');
+                    }
+                    showToast(`Challenge ${challenge.toUpperCase()} verified!`);
+                } else {
+                    status.textContent = 'Vulnerable';
+                    status.classList.remove('running');
+                    status.classList.add('fail');
+                    flagEl.textContent = '';
+                    showToast(result.message || 'Verification failed.', true);
+                }
+            } catch (err) {
+                status.textContent = 'Error';
+                status.classList.remove('running');
+                status.classList.add('fail');
+                flagEl.textContent = '';
+                showToast(err.message, true);
+            }
+        }
+
+        document.querySelectorAll('.verify-btn').forEach(btn => {
+            btn.addEventListener('click', () => runVerification(btn.dataset.challenge));
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', async () => {
+            const button = document.getElementById('resetBtn');
+            button.disabled = true;
+            button.textContent = 'Resetting...';
+            try {
+                const result = await postJSON('/api/reset');
+                showToast(result.message || 'Environment reset.');
+                button.textContent = 'Reset Environment';
+            } catch (err) {
+                showToast(err.message, true);
+                button.textContent = 'Reset Failed';
+                setTimeout(() => button.textContent = 'Reset Environment', 2200);
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        document.getElementById('rebuildBtn').addEventListener('click', async () => {
+            const button = document.getElementById('rebuildBtn');
+            button.disabled = true;
+            button.textContent = 'Rebuilding...';
+            try {
+                const result = await postJSON('/api/rebuild');
+                showToast(result.message || 'App rebuilt.');
+                button.textContent = 'Fix Applied';
+            } catch (err) {
+                showToast(err.message, true);
+                button.textContent = 'Rebuild Failed';
+                setTimeout(() => button.textContent = 'Fix Applied', 2200);
+            } finally {
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+

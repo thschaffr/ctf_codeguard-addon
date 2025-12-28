@@ -1,0 +1,456 @@
+:root {
+    /* Cyberpunk / Futuristic Palette - Matching Vuln App */
+    --bg-color: #050505;
+    --panel-bg: rgba(10, 10, 12, 0.85);
+    --panel-border: rgba(0, 255, 200, 0.3);
+    --headline: #00ffc8;
+    --text-primary: #e0e0e0;
+    --text-secondary: #8899a6;
+    --accent: #00ffc8;
+    --accent-strong: #00cc9f;
+    --accent-glow: rgba(0, 255, 200, 0.4);
+    --danger: #ff2a6d;
+    --divider: rgba(0, 255, 200, 0.15);
+    --success: #22c55e;
+    --status-running: #facc15;
+    --radius-small: 2px;
+    --radius-medium: 4px;
+    --font-main: "Courier New", Courier, monospace;
+    
+    --bg-start: #050505;
+    --bg-end: #0a0a0c;
+    --card-bg: rgba(10, 10, 12, 0.85);
+    --card-border: rgba(0, 255, 200, 0.3);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    /* Scanline grid effect from vuln app */
+    background-image: 
+        linear-gradient(rgba(0, 255, 200, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 200, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: var(--text-primary);
+    display: block;
+    padding: 0;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Scanline effect overlay */
+body::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 0;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+
+.background-gradient {
+    /* Optional glow behind content */
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% -10%, rgba(0, 255, 200, 0.05), transparent 45%),
+                radial-gradient(circle at 80% 0%, rgba(0, 255, 200, 0.03), transparent 50%);
+    filter: blur(60px);
+    opacity: 0.8;
+    z-index: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 64px 40px 120px; /* Added bottom padding for pacman */
+}
+
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--divider);
+    padding-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    margin: 0 0 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--headline);
+    text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.hero p {
+    margin: 0;
+    color: var(--text-secondary);
+    max-width: 640px;
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.reset-btn {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #000;
+    font-weight: 700;
+    padding: 14px 22px;
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    box-shadow: 0 0 10px var(--accent-glow);
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover:not(:disabled) {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+    transform: translateY(-2px);
+}
+
+.reset-btn:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.secondary-btn {
+    background: rgba(0, 255, 200, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 5px var(--accent-glow);
+}
+
+.secondary-btn:hover:not(:disabled) {
+    background: rgba(0, 255, 200, 0.2);
+    box-shadow: 0 0 15px var(--accent-glow);
+    transform: translateY(-1px);
+}
+
+.secondary-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.action-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+}
+
+.card {
+    backdrop-filter: blur(5px);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-medium);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: 0 0 20px rgba(0, 255, 200, 0.05);
+    position: relative;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-pill {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-small);
+    background: rgba(0, 255, 200, 0.1);
+    border: 1px solid var(--accent);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: "Courier New", monospace;
+    box-shadow: 0 0 5px var(--accent-glow);
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--headline);
+}
+
+.card-body {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.verify-btn {
+    background: rgba(0, 255, 200, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s ease;
+}
+
+.verify-btn:hover {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.status-pill {
+    border-radius: var(--radius-small);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--text-secondary);
+    background: transparent;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+}
+
+.status-pill.running {
+    border-color: var(--status-running);
+    color: var(--status-running);
+    box-shadow: 0 0 5px var(--status-running);
+}
+
+.status-pill.ok {
+    border-color: var(--success);
+    color: var(--success);
+    box-shadow: 0 0 5px var(--success);
+}
+
+.status-pill.fail {
+    border-color: var(--danger);
+    color: var(--danger);
+    box-shadow: 0 0 5px var(--danger);
+}
+
+.flag {
+    display: none;
+    margin: 0;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: var(--radius-small);
+    border: 1px solid var(--accent);
+    font-size: 0.9rem;
+    font-family: "Courier New", monospace;
+    color: var(--accent);
+    overflow-x: auto;
+    text-shadow: 0 0 5px var(--accent-glow);
+}
+
+.flag.visible {
+    display: block;
+    animation: typeIn 0.5s ease-out;
+}
+
+@keyframes typeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.toast {
+    position: fixed;
+    bottom: 28px;
+    right: 32px;
+    padding: 14px 20px;
+    border-radius: var(--radius-small);
+    background: rgba(10, 10, 12, 0.95);
+    border: 1px solid var(--accent);
+    color: var(--text-primary);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 20;
+    box-shadow: 0 0 20px rgba(0, 255, 200, 0.15);
+    font-family: "Courier New", monospace;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.success {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.toast.error {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+@media (max-width: 720px) {
+    .hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .reset-btn {
+        align-self: stretch;
+        text-align: center;
+    }
+}
+
+/* Pacman Animation Footer - Adjusted for Hunting */
+.footer-anim {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px; /* Ensures enough height */
+    overflow: hidden;
+    z-index: 100;
+    pointer-events: none;
+    background: transparent;
+}
+
+.pacman {
+    position: absolute;
+    bottom: 10px;
+    left: -60px; /* Start off-screen */
+    width: 0;
+    height: 0;
+    border-right: 30px solid transparent;
+    border-top: 30px solid var(--accent);
+    border-left: 30px solid var(--accent);
+    border-bottom: 30px solid var(--accent);
+    border-radius: 30px;
+    /* Hunt logic: Pacman is BEHIND the ghosts, chasing them */
+    animation: chomp 0.3s infinite linear, chaseRight 12s infinite linear;
+}
+
+.ghost {
+    position: absolute;
+    bottom: 15px;
+    width: 40px;
+    height: 40px;
+    background: var(--danger);
+    border-radius: 20px 20px 0 0;
+    /* Ghosts run away in front of Pacman */
+    animation: runAwayRight 12s infinite linear;
+}
+.ghost::before, .ghost::after {
+    content: '';
+    position: absolute;
+    background: #fff;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: 10px;
+    left: 8px;
+}
+.ghost::after { left: 22px; }
+
+/* 
+   Order: Ghost 2 (furthest right) -> Ghost 1 -> Pacman (furthest left, chasing)
+*/
+.ghost-1 { 
+    /* 100px ahead of pacman start */
+    animation-delay: 0s; 
+    left: 40px; 
+}
+
+.ghost-2 { 
+    /* 160px ahead of pacman start */
+    animation-delay: 0s; 
+    left: 100px; 
+    background: #ffbf00; 
+}
+
+@keyframes chomp {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(45deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@keyframes chaseRight {
+    0% { left: -60px; }
+    100% { left: 110%; }
+}
+
+@keyframes runAwayRight {
+    /* Start ahead of pacman */
+    0% { transform: translateX(-200px); left: 0; } /* Adjust starting position relative to anim */
+    /* Actually, simpler: set initial left in class, and animate margin-left or transform */
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(100vw + 200px)); }
+}
+
+/* Fixing the hunt logic simply with delays and offsets on the same keyframe key */
+@keyframes huntMove {
+    0% { left: -150px; }
+    100% { left: 110%; }
+}
+
+.pacman {
+    animation: chomp 0.3s infinite linear, huntMove 10s infinite linear;
+    animation-delay: 0.5s; /* Starts slightly after to look like he's chasing */
+}
+
+.ghost-1 {
+    animation: huntMove 10s infinite linear;
+    animation-delay: 0.2s; /* Ahead of pacman */
+}
+
+.ghost-2 {
+    animation: huntMove 10s infinite linear;
+    animation-delay: 0s; /* Furthest ahead */
+    background: #ffbf00; 
+}
