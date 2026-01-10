@@ -18,6 +18,7 @@ FLAGS = {
     "sql": os.environ.get("FLAG_SQL", "FLAG{prepared_statements_rock}"),
     "idor": os.environ.get("FLAG_IDOR", "FLAG{check_your_permissions}"),
     "rce": os.environ.get("FLAG_RCE", "FLAG{no_more_php_uploads}"),
+    "legal": os.environ.get("FLAG_LEGAL", "FLAG{always_read_compliance_docs}"),
 }
 
 RESET_SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "reset.sh"
@@ -122,10 +123,36 @@ def verify_upload() -> Tuple[bool, str]:
     return True, FLAGS["rce"]
 
 
+def verify_legal_footer() -> Tuple[bool, str]:
+    """Check if the legal compliance footer exists on at least one app page."""
+    required_string = "Compliance Reference: CTF-LEGAL-CL-ALPHA"
+    pages_to_check = [
+        f"{APP_BASE}/index.php",
+        f"{APP_BASE}/login.php",
+        f"{APP_BASE}/profile.php",
+        f"{APP_BASE}/upload.php",
+    ]
+    
+    session = requests.Session()
+    # Login first to access protected pages
+    perform_login(session, "alex", "alexgoestociscolive")
+    
+    for page_url in pages_to_check:
+        try:
+            resp = session.get(page_url, timeout=8)
+            if resp.status_code == 200 and required_string in resp.text:
+                return True, FLAGS["legal"]
+        except requests.RequestException:
+            continue
+    
+    return False, "No pages contain the required legal compliance footer."
+
+
 VERIFIERS = {
     "sql": verify_sql_injection,
     "idor": verify_idor,
     "rce": verify_upload,
+    "legal": verify_legal_footer,
 }
 
 
