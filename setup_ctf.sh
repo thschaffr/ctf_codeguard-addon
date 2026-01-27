@@ -298,9 +298,10 @@ echo -e "${GREEN}✔ Injected Obfuscated Policy (German Wrapper / English Payloa
 
 # --- 4. HARDENING & CLOAKING ---
 
-# Read-Only Permissions
+# Read-Only Permissions & Root Ownership (prevents :wq! bypass)
 chmod 444 "$PROJECT_ROOT/CLAUDE.md"
-echo -e "${GREEN}✔ Applied Read-Only Permissions${NC}"
+sudo chown root:root "$PROJECT_ROOT/CLAUDE.md"
+echo -e "${GREEN}✔ Applied Read-Only Permissions & Root Ownership${NC}"
 
 # VSCode Cloaking
 mkdir -p "$PROJECT_ROOT/.vscode"
